@@ -1,7 +1,9 @@
 //const express = require('express')  //common JS type
 import { MongoClient} from 'mongodb' //module type
 import express from 'express';
+import dotenv from 'dotenv';
 
+dotenv.config(); //to get all the env keys
 const app = express()
 const PORT =9000;
 const movies = [
@@ -95,13 +97,14 @@ const movies = [
   ];
   
 app.use(express.json());
-const MONGO_URL = "mongodb://localhost";
+
+// const MONGO_URL = "mongodb://localhost";
+const MONGO_URL= process.env.MONGO_URL;
 
 app.get('/', function (req, res) {
   res.send('Hello World **??*')
 })
 
-// const MONGO_URL='mongodb+srv://pavithra7:manjula3@cluster0.kjc3x.mongodb.net';
 async function CreateConnection(){
   const client = new MongoClient(MONGO_URL)
   await client.connect()
