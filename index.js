@@ -2,6 +2,7 @@
 import { MongoClient} from 'mongodb' //module type
 import express from 'express';
 import dotenv from 'dotenv';
+import { moviesRouter } from './routes/movies.js';
 
 dotenv.config(); //to get all the env keys
 const app = express()
@@ -105,6 +106,8 @@ app.get('/', function (req, res) {
   res.send('Hello World **??*')
 })
 
+
+
 async function CreateConnection(){
   const client = new MongoClient(MONGO_URL)
   await client.connect()
@@ -112,63 +115,13 @@ async function CreateConnection(){
   return client;
 }
 
-const client= await CreateConnection();
-
-//get movies using params
- app.get('/movies',async (req, res) => {
-console.log(req.query)
-const {language, rating}=req.query;
-const filters = req.query;
-if(filters.rating){
-  filters.rating = +filters.rating;
-}
-const movieslist = await client.db('newdb').collection('movies').
-find(filters).toArray();
-movieslist.length!=0 ? res.send(movieslist) : res.status(404).send({msg:"Movies not available"})
-})
+export const client= await CreateConnection();
 
 
-//get movies using ID
-app.get("/movies/:id",  async(req, res)=> {
-    const {id}= req.params;
-    const movie = await client.db('newdb').collection('movies').find({id:id}).toArray();
-    console.log(movie);
-    movie.length!=0 ? res.send(movie) : res.status(404).send({msg:"Movies not available"})
-})
-
-
-//to post data to db
-app.post('/movies', express.json() ,async(req, res) =>{
-  req.headers['content-type'] = 'application/json';
-  const data = req.body;
-  console.log( "data is " + JSON.stringify( data));
- const result = await client.db('newdb').collection('movies').insertMany(data);
- res.send(result);
-})
-
-
-//get all the movies
-app.get('/movies', async(req, res) =>{
-  const movie = await client.db('newdb').collection('movies'). 
-  find({}).toArray();
-  movie.length!=0 ? res.send(movie) : res.status(404).send({msg:"Movies not available"})
-})
-
-
-//delete all the movies
-app.delete("/movies/:id",  async(req, res)=> {
-  const {id}= req.params;
-  const movie = await client.db('newdb').collection('movies').deleteMany({id:id});
-  console.log(movie);
-  movie.length!=0 ? res.send(movie) : res.status(404).send({msg:"Movies not available"})
-})
-
-//Update all the movies
-app.put("/movies/:id",  async(req, res)=> {
-  const {id}= req.params;
-  const movie = await client.db('newdb').collection('movies').updateMany({id:id}, {$set:{rating:7}});
-  console.log(movie);
-  movie.length!=0 ? res.send(movie) : res.status(404).send({msg:"Movies not available"})
-})
+app.use("/movies",moviesRouter)
 
 app.listen(PORT,()=>console.log("The server is started",PORT))
+
+
+
+
